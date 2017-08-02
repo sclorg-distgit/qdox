@@ -1,0 +1,69 @@
+From ca5a50fc69b4b1bb0f640edb8dbaa13c5e90112e Mon Sep 17 00:00:00 2001
+From: rfscholte <rfscholte@apache.org>
+Date: Thu, 19 Jan 2017 18:44:38 +0100
+Subject: [PATCH] #16 Single comment line not recognized
+
+---
+ src/grammar/lexer.flex                             |  2 +-
+ .../thoughtworks/qdox/JavaProjectBuilderTest.java  | 32 ++++++++++++++++++++++
+ 2 files changed, 33 insertions(+), 1 deletion(-)
+
+diff --git a/src/grammar/lexer.flex b/src/grammar/lexer.flex
+index 681f2b8..bd3462c 100644
+--- a/src/grammar/lexer.flex
++++ b/src/grammar/lexer.flex
+@@ -608,7 +608,7 @@ JavadocEnd                      = "*"+ "/"
+     \'                  { if (appendingToCodeBody) { codeBody.append('\''); } pushState(CHAR); }
+ }
+ 
+-<ASSIGNMENT, YYINITIAL, CODEBLOCK, PARENBLOCK, ENUM, ANNOTATIONTYPE, ANNOTATION, ARGUMENTS, TYPE> {
++<ASSIGNMENT, YYINITIAL, CODEBLOCK, PARENBLOCK, ENUM, ANNOTATIONTYPE, ANNOTATION, ARGUMENTS, TYPE, NAME> {
+   "//"                { if (appendingToCodeBody) { codeBody.append("//"); } pushState(SINGLELINECOMMENT); }
+   "/*"                { if (appendingToCodeBody) { codeBody.append("/*"); } pushState(MULTILINECOMMENT); }
+   "/**/"              { if (appendingToCodeBody) { codeBody.append("/**/"); } }
+diff --git a/src/test/java/com/thoughtworks/qdox/JavaProjectBuilderTest.java b/src/test/java/com/thoughtworks/qdox/JavaProjectBuilderTest.java
+index 204a23a..edc6352 100644
+--- a/src/test/java/com/thoughtworks/qdox/JavaProjectBuilderTest.java
++++ b/src/test/java/com/thoughtworks/qdox/JavaProjectBuilderTest.java
+@@ -1582,6 +1582,38 @@ public class JavaProjectBuilderTest extends TestCase
+         
+         assertEquals( "com.fg.rtdoc.test.Iface", clz.getInterfaces().get(0).getFullyQualifiedName() );
+     }
++
++    // Github #16
++    public void testBeanProperties()
++    {
++        String zothParent = "public class ZothParent {\n" + 
++            " private String name;\n" + 
++            " public String getName() {\n" + 
++            "    return name;\n" + 
++            " }\n" + 
++            " public void setName(String name) {\n" + 
++            "    this.name = name;\n" + 
++            " }\n" + 
++            "}";
++        
++        String zothChild = "public class ZothChild // extends ZothParent\n" + 
++            "{\n" + 
++            " private int age;\n" + 
++            " public int getAge() {\n" + 
++            "    return age;\n" + 
++            " }\n" + 
++            " public void setAge(int age) {\n" + 
++            "    this.age = age;\n" + 
++            " }\n" + 
++            "}";
++        
++        JavaProjectBuilder builder = new JavaProjectBuilder();
++        builder.addSource(new StringReader( zothParent ));
++        JavaClass zothClass = builder.addSource(new StringReader( zothChild )).getClassByName( "ZothChild" );
++        assertEquals( "java.lang.Object", zothClass.getSuperClass().getBinaryName());
++        assertEquals( 2, zothClass.getBeanProperties( true ).size() );
++        
++    }
+     
+     public void testDeclarationSignatureWithGenerics() {
+         String source = "import java.util.List;"
+-- 
+2.9.3
+
