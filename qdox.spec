@@ -6,7 +6,7 @@
 Summary:        Extract class/interface/method definitions from sources
 Name:           %{?scl_prefix}qdox
 Version:        2.0
-Release:        0.8.%{vertag}.1%{?dist}
+Release:        0.8.%{vertag}.2%{?dist}
 Epoch:          0
 License:        ASL 2.0
 URL:            https://github.com/paul-hammant/qdox
@@ -81,6 +81,9 @@ zip -u target/%{pkg_name}-%{version}.jar META-INF/MANIFEST.MF
 %doc LICENSE.txt
 
 %changelog
+* Thu Jun 22 2017 Michael Simacek <msimacek@redhat.com> - 0:2.0-0.8.M5.2
+- Mass rebuild 2017-06-22
+
 * Wed Jun 21 2017 Java Maintainers <java-maint@redhat.com> - 0:2.0-0.8.M5.1%{?dist}
 - Automated package import and SCL-ization
 
